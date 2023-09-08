@@ -14,7 +14,6 @@ def get_vector_feature(idx_event, data, borders, R, r_cut, all_r, dist):
 
     # Функция, которая берёт только одно событие - данные с одного столкновения ядер.
     def split_data_event(df, idx):
-        # data_temp = pd.DataFrame() # если всё хорошо работает, то можно убрать
         for i in range(df.shape[0]):
             if df.mass[i] == -1 and df.particle_charge[i] == idx:
                 cnt_particle = df.lepton_number[i]  # количество частиц в столкновении

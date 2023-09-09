@@ -5,25 +5,17 @@ from create_data_loop import get_vector_feature
 # параметры эксперимента
 # -----------------------------
 
-# пути для импорта и экспорта данных
-path_from = r'D:\Programming\Science\csv_data'
-path_to = r'D:\Programming\Science\new_version'
 
-# номера файлов, которые нужно обработать
-begin_number_file = 1
-end_number_file = 2
-
-
-borders = {0: [0, 1], 1: [1, 16.4]}  # границы классов
-R = 25  # внешний радиус датчика (см)
-r_cut = 5  # внутренний радиус датчика (см)
-dist = [400, 500, 600]  # расстояние до соответствующего датчика (см)
-all_r = [r_cut, 10, 15, 20, R]  # Разбиение на кольца датчика. Лучше ближе к центру чаще, а дальше - реже
+# borders = {0: [0, 1], 1: [1, 16.4]}  # границы классов
+# R = 25 # внешний радиус датчика (см)
+# r_cut = 5  # внутренний радиус датчика (см)
+# dist = [400, 500, 600]  # расстояние до соответствующего датчика (см)
+# all_r = [r_cut, 10, 15, 20, R]  # Разбиение на кольца датчика. Лучше ближе к центру чаще, а дальше - реже
 
 
 # функция проверки корректности параметров эксперимента.
-def correct_params():
-    if begin_number_file < end_number_file and (dist == sorted(dist)) and (all_r == sorted(all_r)):
+def correct_params(start_file, end_file, dist, all_r):
+    if start_file < end_file and (dist == sorted(dist)) and (all_r == sorted(all_r)):
         return True
     else:
         return False
@@ -39,9 +31,9 @@ def create_column_names(pair_sensor):
     return col_name
 
 
-def data_processing():
+def data_processing(start_file=1, end_file=100):
     # на каждой итерации обрабатывается 1 файл и создаётся 1 файл готовых данных
-    for file_i in range(begin_number_file, end_number_file + 1):
+    for file_i in range(start_file, end_file + 1):
         print(f"Начата обработка файла №{file_i}")
         start_time = time.time()  # засечём время
 
@@ -73,9 +65,10 @@ def data_processing():
         print("Результат записан\n")
 
 
-if correct_params():
-    print("Параметры эксперимента корректны!")
-    lst_col = create_column_names(pair_sensor=len(dist))
-    data_processing()
-else:
-    print("Параметры эксперимента некорректны!")
+def start_data_processing(path_from, path_to, start_file, end_file, borders, dist_sensor, subrings):
+    if correct_params(start_file, end_file, dist=dist_sensor, all_r=subrings):
+        print("Параметры эксперимента корректны!")
+        lst_col = create_column_names(pair_sensor=len(dist))
+        data_processing()
+    else:
+        print("Параметры эксперимента некорректны!")

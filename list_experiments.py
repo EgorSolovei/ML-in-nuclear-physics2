@@ -1,38 +1,85 @@
-from processing_one_experiment import start_data_processing
+import numpy as np
+import pandas as pd
+import os
+from processing_one_experiment import data_processing
 
-experiments_list = {
-    1: {'name_exp': 'exp_1',
-        'path_from': r'D:\Programming\Science\csv_data',
-        'path_to': r'D:\Programming\Science\new_version',
-        'begin_number_file': 1,
-        'end_number_file': 100,
-        'borders': {0: [0, 1], 1: [1, 16.4]},
-        'sensor_dist': [400, 500, 600],
-        'subrings': [5, 10, 15, 20]},
 
-    2: {'name_exp': 'exp_2',
-        'path_from': r'D:\Programming\Science\csv_data',
-        'path_to': r'D:\Programming\Science\new_version',
-        'begin_number_file': 1,
-        'end_number_file': 100,
-        'borders': {0: [0, 1], 1: [1, 16.4]},
-        'sensor_dist': [400, 500, 600],
-        'subrings': [5, 10, 15, 20]},
-}
+list_experiments = [
+    {'name_exp': 'test_exp_1',
+     'path_from': r'D:\Programming\Science\csv_data',
+     'path_to': r'D:\Programming\Science',
+     'begin_number_file': 1,
+     'end_number_file': 100,
+     'borders': {0: [0, 1], 1: [1, 16.4]},
+     'sensor_dist': [1, 3, 5],
+     'subrings': [0.3, 0.7, 1.2, 1.6, 2],
+     'step_angle': np.pi / 4
+     },
 
-for number_experiment, params_experiment in experiments_list.items():
-    experiment_name = experiments_list[number_experiment]['name_exp']
-    path_to = experiments_list[number_experiment]['path_to']
-    path_from = experiments_list[number_experiment]['path_from']
+    # {'name_exp': 'exp_2',
+    #  'path_from': r'D:\Programming\Science\csv_data',
+    #  'path_to': r'D:\Programming\Science\new_version',
+    #  'begin_number_file': 1,
+    #  'end_number_file': 100,
+    #  'borders': {0: [0, 1], 1: [1, 16.4]},
+    #  'sensor_dist': [400, 500, 600],
+    #  'subrings': [5, 10, 15, 20],
+    #  'step_angle': np.pi / 4
+    #  }
+]
 
-    begin_number_file = experiments_list[number_experiment]['begin_number_file']
-    end_number_file = experiments_list[number_experiment]['end_number_file']
 
-    class_borders = experiments_list[number_experiment]['borders']
-    sensor_dist = experiments_list[number_experiment]['sensor_dist']
-    subrings = experiments_list[number_experiment]['subrings']
+# функция проверки корректности параметров эксперимента.
+def correct_params(start_file, end_file, dist, all_r, step_ang):
+    if 1 <= start_file <= end_file <= 100 and (dist == sorted(dist)) \
+            and (all_r == sorted(all_r)) and 0 < step_ang <= np.pi:
+        return True
+    else:
+        return False
 
-    print(f"Начата обработка данных эксперимента {experiment_name}")
-    start_data_processing(path_from=path_from, path_to=path_to, start_file=1, end_file=100,
-                          borders=class_borders, dist_sensor=sensor_dist, subrings=subrings)
 
+# склеим все данные в один файл
+def join_processed_data():
+    data = pd.DataFrame()
+    for i in range(1, 101):
+        temp_df = pd.read_csv(path_to + f"\processed_data\processed_data{i}.csv")
+        data = data.append(temp_df, ignore_index=True)
+    data.to_csv(path_to + "data.csv", index=False)
+
+
+for params_experiment in list_experiments:
+    experiment_name = params_experiment['name_exp']
+
+    # Номер начального и конечного файла обработки. Всего 100 файлов
+    begin_number_file = params_experiment['begin_number_file']
+    end_number_file = params_experiment['end_number_file']
+
+    # Параметры эксперимента
+    class_borders = params_experiment['borders']
+    sensor_dist = params_experiment['sensor_dist']
+    subrings = params_experiment['subrings']
+    step_angle = params_experiment['step_angle']
+
+    # Путь получения и сохранения данных
+    path_from = params_experiment['path_from']
+    path_to = params_experiment['path_to'] + "\\" + experiment_name
+    os.mkdir(path_to)  # создание папки эксперимента
+    os.mkdir(path_to + "\processed_data")  # создание папка обработанных данных эксперимента
+
+    with open(path_to + '\experiment_param.txt', 'w') as f:
+        f.write(f"Название эксперимента: {experiment_name}.\nГраницы классов: {class_borders}."
+                f"\nРасстояние до датчиков: {sensor_dist}.\nПодкольца разбиения: {subrings}.\nШаг угла: {step_angle}")
+
+    # проверим корректность параметров
+    if correct_params(begin_number_file, end_number_file, sensor_dist, subrings, step_angle):
+        print(f"Параметры эксперимента {experiment_name} корректны. Началась обработка данных")
+        data_processing(class_borders, subrings, sensor_dist, step_angle,
+                        path_from, path_to, begin_number_file, end_number_file)
+        # здесь написать функцию, которая будет склеивать все обработанные данные в папке
+        if len(os.listdir(path_to + "\processed_data")) == 100:
+            print(f"Все файлы эксперимента {experiment_name} обработаны.")
+            join_processed_data()
+        else:
+            print(f"Данные эксперимента {experiment_name} обработаны НЕ до конца!!!")
+    else:
+        print(f"Параметры эксперимента {experiment_name} НЕ корректны!!!")

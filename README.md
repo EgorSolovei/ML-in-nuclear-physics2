@@ -11,9 +11,8 @@
   Являются представлением того, куда и с какой скоростью разлетелись частицы после столкновения. 
   
   ## Файлы
-  - data_preprocessing - предобработка одного файла данных с подробным описанием.
-  - main_file - файл, в котором задаются параметры эксперимента и запускается create_data_loop
-  - create_data_loop - обработка всех данных и создание очищенных данных - data.csv
+  - data_preprocessing.ipynb - предобработка одного файла данных с подробным описанием.
+  - list_experiment.py - задаются параметры нескольких экспериментов. Вызывается processing_one_experiment.py
+  - processing_one_experiment.py - обработка сырых файлов и запускается create_data_loop
+  - create_data_loop.py - преобразование одного события (столкновения) в вектор
   - data.csv - очищенные данные для обучения модели.
-  - DT_and_RF - модели Decision Tree и Random Forest.
-  - GBDT - Gradient Boost on Decision Tree различные реализации

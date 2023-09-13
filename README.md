@@ -16,3 +16,6 @@
   - processing_one_experiment.py - обработка сырых файлов и запускается create_data_loop
   - create_data_loop.py - преобразование одного события (столкновения) в вектор
   - data.csv - очищенные данные для обучения модели.
+
+## New Note
+  

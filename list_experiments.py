@@ -56,8 +56,8 @@ for params_experiment in list_experiments:
     os.mkdir(path_to + "/processed_data")  # создание папка обработанных данных эксперимента
 
     # запишем в .gitignore папку с обработанными данными
-    with open(".gitignore", 'w') as git_ignore:
-        git_ignore.write(path_to)
+    with open(".gitignore", 'a') as git_ignore:
+        git_ignore.write("\n" + experiment_name)
 
     with open(path_to + '/experiment_param.txt', 'w') as f:
         f.write(f"Название эксперимента: {experiment_name}.\nГраницы классов: {class_borders}."

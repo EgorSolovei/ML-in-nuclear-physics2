@@ -12,7 +12,7 @@ def data_processing(borders, subrings, sensor_dist, step_angle, path_from, path_
         print(f"Начата обработка файла №{file_i}")
         start_time = time.time()  # засечём время
 
-        data = pd.read_csv(path_from + f'\Data_{file_i}.csv', sep=';', index_col=False)
+        data = pd.read_csv(path_from + f'/Data_{file_i}.csv', sep=';', index_col=False)
 
         # убрали не нужные колонки
         data.drop(columns=['baryon_number', 'impulse_z_lab', 'param_5'], inplace=True)
@@ -35,5 +35,5 @@ def data_processing(borders, subrings, sensor_dist, step_angle, path_from, path_
 
         print(f"Время обработки файла №{file_i}: {(time.time() - start_time):.02f} секунд")
 
-        data_res.to_csv(path_to + f"\processed_data\processed_data{file_i}.csv", index=False)
+        data_res.to_csv(path_to + f"/processed_data/processed_data{file_i}.csv", index=False)
         print("Результат записан\n")

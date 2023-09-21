@@ -118,7 +118,6 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
             to_vec.loc[between_corner_for_ring(to_vec.arccos_theta, 1), name_column] = j
             to_vec.loc[between_corner_for_ring(to_vec.arccos_theta, -1), name_column] = j
 
-    # Разбиение на сектора. До этого момента всё хорошо
     # -----------------------------------------------------------------
 
     """

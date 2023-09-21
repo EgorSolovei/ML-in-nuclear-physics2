@@ -6,26 +6,15 @@ from processing_one_experiment import data_processing
 
 list_experiments = [
     {'name_exp': 'test_exp_1',
-     'path_from': r'D:\Programming\Science\csv_data',
-     'path_to': r'D:\Programming\Science',
+     'path_from': r'/home/egor/programming/python/ML-in-nuclear-physics2/csv_data',
+     'path_to': r'/home/egor/programming/python/ML-in-nuclear-physics2',
      'begin_number_file': 1,
      'end_number_file': 100,
-     'borders': {0: [0, 1], 1: [1, 16.4]},
-     'sensor_dist': [1, 3, 5],
-     'subrings': [0.3, 0.7, 1.2, 1.6, 2],
-     'step_angle': np.pi / 4
-     },
-
-    # {'name_exp': 'exp_2',
-    #  'path_from': r'D:\Programming\Science\csv_data',
-    #  'path_to': r'D:\Programming\Science\new_version',
-    #  'begin_number_file': 1,
-    #  'end_number_file': 100,
-    #  'borders': {0: [0, 1], 1: [1, 16.4]},
-    #  'sensor_dist': [400, 500, 600],
-    #  'subrings': [5, 10, 15, 20],
-    #  'step_angle': np.pi / 4
-    #  }
+     'borders': {1: [0, 1], 0: [1, 16.4]},
+     'sensor_dist': [4],
+     'subrings': [5, 25],
+     'step_angle': np.pi / 2
+     }
 ]
 
 
@@ -42,7 +31,7 @@ def correct_params(start_file, end_file, dist, all_r, step_ang):
 def join_processed_data():
     data = pd.DataFrame()
     for i in range(1, 101):
-        temp_df = pd.read_csv(path_to + f"\processed_data\processed_data{i}.csv")
+        temp_df = pd.read_csv(path_to + f"/processed_data/processed_data{i}.csv")
         data = data.append(temp_df, ignore_index=True)
     data.to_csv(path_to + "data.csv", index=False)
 
@@ -62,11 +51,15 @@ for params_experiment in list_experiments:
 
     # Путь получения и сохранения данных
     path_from = params_experiment['path_from']
-    path_to = params_experiment['path_to'] + "\\" + experiment_name
+    path_to = params_experiment['path_to'] + "/" + experiment_name
     os.mkdir(path_to)  # создание папки эксперимента
-    os.mkdir(path_to + "\processed_data")  # создание папка обработанных данных эксперимента
+    os.mkdir(path_to + "/processed_data")  # создание папка обработанных данных эксперимента
 
-    with open(path_to + '\experiment_param.txt', 'w') as f:
+    # запишем в .gitignore папку с обработанными данными
+    with open(".gitignore", 'w') as git_ignore:
+        git_ignore.write(path_to)
+
+    with open(path_to + '/experiment_param.txt', 'w') as f:
         f.write(f"Название эксперимента: {experiment_name}.\nГраницы классов: {class_borders}."
                 f"\nРасстояние до датчиков: {sensor_dist}.\nПодкольца разбиения: {subrings}.\nШаг угла: {step_angle}")
 
@@ -76,7 +69,7 @@ for params_experiment in list_experiments:
         data_processing(class_borders, subrings, sensor_dist, step_angle,
                         path_from, path_to, begin_number_file, end_number_file)
         # здесь написать функцию, которая будет склеивать все обработанные данные в папке
-        if len(os.listdir(path_to + "\processed_data")) == 100:
+        if len(os.listdir(path_to + "/processed_data")) == 100:
             print(f"Все файлы эксперимента {experiment_name} обработаны.")
             join_processed_data()
         else:

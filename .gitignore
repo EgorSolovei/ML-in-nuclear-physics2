@@ -1,6 +1,6 @@
-new_format_data.py
 .gitignore
+new_format_data.py
 
-__pycache__
+.idea
 csv_data/
-.idea/
+__pycache__

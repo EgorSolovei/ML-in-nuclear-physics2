@@ -6,8 +6,8 @@ from processing_one_experiment import data_processing
 
 list_experiments = [
     {'name_exp': 'test_exp_1',
-     'path_from': r'/home/egor/programming/python/ML-in-nuclear-physics2/csv_data',
-     'path_to': r'/home/egor/programming/python/ML-in-nuclear-physics2',
+     'path_from': '/home/egor/programming/python/ML-in-nuclear-physics2/csv_data',
+     'path_to': '/home/egor/programming/python/ML-in-nuclear-physics2',
      'begin_number_file': 1,
      'end_number_file': 100,
      'borders': {1: [0, 1], 0: [1, 16.4]},
@@ -32,8 +32,8 @@ def join_processed_data():
     data = pd.DataFrame()
     for i in range(1, 101):
         temp_df = pd.read_csv(path_to + f"/processed_data/processed_data{i}.csv")
-        data = data.append(temp_df, ignore_index=True)
-    data.to_csv(path_to + "data.csv", index=False)
+        data = pd.concat([data, temp_df], ignore_index=True)
+    data.to_csv(path_to + "/data.csv", index=False)
 
 
 for params_experiment in list_experiments:

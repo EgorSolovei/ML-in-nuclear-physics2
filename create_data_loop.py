@@ -50,8 +50,8 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
     # Прилетит ли частица на какой-либо датчик
     # -----------------------------------------------------------------
     # P.S dist[0] - радиус выреза датчика. dist[-1] - радиус датчика
-    alpha_0 = np.arctan(dist[0] / dist[-1])  # Минимальный угол попадания
-    beta_0 = np.arctan(dist[-1] / dist[0])  # Максимальный угол попадания
+    alpha_0 = np.arctan(all_r[0] / dist[-1])  # Минимальный угол попадания
+    beta_0 = np.arctan(all_r[-1] / dist[0])  # Максимальный угол попадания
 
     def to_sensor(temp_data):
         arccos = np.arccos(temp_data.impulse_z / temp_data.modul_sum_impulse)
@@ -70,8 +70,8 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
 
     # На какой датчик прилетела частица
     # -----------------------------------------------------------------
-    alpha_i = [np.arctan(dist[0] / dist_i) for dist_i in dist]  # минимальные углы для i датчика
-    beta_i = [np.arctan(dist[-1] / dist_i) for dist_i in dist]  # максимальные углы для i датчика
+    alpha_i = [np.arctan(all_r[0] / dist_i) for dist_i in dist]  # минимальные углы для i датчика
+    beta_i = [np.arctan(all_r[-1] / dist_i) for dist_i in dist]  # максимальные углы для i датчика
 
     # создадим колонку с арккосинусом угла тета
     to_vec["arccos_theta"] = np.arccos(to_vec.impulse_z / to_vec.modul_sum_impulse)

@@ -5,11 +5,11 @@ from processing_one_experiment import data_processing
 
 
 list_experiments = [
-    {'name_exp': 'test_exp_1',
+    {'name_exp': '4meters_1ring_4angle',
      'path_from': '/home/egor/programming/python/ML-in-nuclear-physics2/csv_data',
      'path_to': '/home/egor/programming/python/ML-in-nuclear-physics2',
      'begin_number_file': 1,
-     'end_number_file': 100,
+     'end_number_file': 2,
      'borders': {1: [0, 1], 0: [1, 16.4]},
      'sensor_dist': [4],
      'subrings': [5, 25],
@@ -59,6 +59,7 @@ for params_experiment in list_experiments:
     with open(".gitignore", 'a') as git_ignore:
         git_ignore.write("\n" + experiment_name)
 
+    # запишем в файл параметры эксперимента
     with open(path_to + '/experiment_param.txt', 'w') as f:
         f.write(f"Название эксперимента: {experiment_name}.\nГраницы классов: {class_borders}."
                 f"\nРасстояние до датчиков: {sensor_dist}.\nПодкольца разбиения: {subrings}.\nШаг угла: {step_angle}")

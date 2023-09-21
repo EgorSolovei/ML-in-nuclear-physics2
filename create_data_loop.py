@@ -189,7 +189,7 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
     # Создание результирующего вектора
     # -----------------------------------------------------------------
     lst_col = create_column_names(pair_sensor=len(dist), pieces=pieces, quan_rings=(len(all_r) - 1))
-    res = pd.Series([0] * len(lst_col), index=lst_col)
+    res = pd.Series([0.0] * len(lst_col), index=lst_col)
 
     # заполнение вектора res
     def position_in_res_vec(df):

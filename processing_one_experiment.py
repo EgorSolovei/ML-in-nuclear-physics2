@@ -33,7 +33,7 @@ def data_processing(borders, subrings, sensor_dist, step_angle, path_from, path_
             vec, data = get_vector_feature(id, data, borders, subrings, sensor_dist, step_angle)
             data_res.loc[len(data_res.index)] = vec  # добавление вектора в конец
 
-        print(f"Время обработки файла №{file_i}: {(time.time() - start_time):.02f} секунд")
+        print(f"Время обработки: {(time.time() - start_time):.02f} секунд")
 
         data_res.to_csv(path_to + f"/processed_data/processed_data{file_i}.csv", index=False)
         print("Результат записан\n")

@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 import os
+
 from processing_one_experiment import data_processing
+from building_models import search_best_model
 
 
 list_experiments = [
@@ -9,7 +11,7 @@ list_experiments = [
      'path_from': '/home/egor/programming/python/ML-in-nuclear-physics2/csv_data',
      'path_to': '/home/egor/programming/python/ML-in-nuclear-physics2',
      'begin_number_file': 1,
-     'end_number_file': 2,
+     'end_number_file': 100,
      'borders': {1: [0, 1], 0: [1, 16.4]},
      'sensor_dist': [4],
      'subrings': [5, 25],
@@ -73,6 +75,7 @@ for params_experiment in list_experiments:
         if len(os.listdir(path_to + "/processed_data")) == 100:
             print(f"Все файлы эксперимента {experiment_name} обработаны.")
             join_processed_data()
+            search_best_model(name_exp=experiment_name)  # поиск лучших гиперпараметров для алгоритмов
         else:
             print(f"Данные эксперимента {experiment_name} обработаны НЕ до конца!!!")
     else:

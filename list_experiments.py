@@ -55,7 +55,7 @@ for params_experiment in list_experiments:
     path_from = params_experiment['path_from']
     path_to = params_experiment['path_to'] + "/" + experiment_name
     os.mkdir(path_to)  # создание папки эксперимента
-    os.mkdir(path_to + "/processed_data")  # создание папка обработанных данных эксперимента
+    os.mkdir(path_to + "/processed_data")  # создание папки обработанных данных эксперимента
 
     # запишем в .gitignore папку с обработанными данными
     with open(".gitignore", 'a') as git_ignore:
@@ -71,10 +71,9 @@ for params_experiment in list_experiments:
         print(f"Параметры эксперимента {experiment_name} корректны. Началась обработка данных")
         data_processing(class_borders, subrings, sensor_dist, step_angle,
                         path_from, path_to, begin_number_file, end_number_file)
-        # здесь написать функцию, которая будет склеивать все обработанные данные в папке
         if len(os.listdir(path_to + "/processed_data")) == 100:
             print(f"Все файлы эксперимента {experiment_name} обработаны.")
-            join_processed_data()
+            join_processed_data()  # склеим все данные в один файл data.csv
             search_best_model(name_exp=experiment_name)  # поиск лучших гиперпараметров для алгоритмов
         else:
             print(f"Данные эксперимента {experiment_name} обработаны НЕ до конца!!!")

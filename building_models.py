@@ -19,10 +19,9 @@ def decrease_data(df, size=10000):
 
 
 def search_best_model(name_exp):
-    path = "/home/egor/programming/python/ML-in-nuclear-physics2/" + name_exp
-    data = pd.read_csv(path + "/data.csv")
+    data = pd.read_csv(name_exp + "/data.csv")
     data["class"] = data["class"].astype(int)
-    small_data = decrease_data(data, size=10000)
+    small_data = decrease_data(data)
 
     X = small_data.drop(["class"], axis=1)
     y = small_data["class"]
@@ -43,7 +42,7 @@ def search_best_model(name_exp):
         write_metrics(y_test, best_model.predict(x_test), name_model, train=False)
 
         # сохраним обученную модель
-        with open(path + f"/{name_model}.pickle", "wb") as f:
+        with open(name_exp + f"/{name_model}.pickle", "wb") as f:
             pickle.dump(best_model, f)
         print(f"Метрики наилучшей модели {name_model} записаны. Модель сохранена")
 
@@ -72,7 +71,7 @@ def search_best_model(name_exp):
         # MCC. Коэффициент корреляции Мэтьюса. [-1, 1]
         mcc = (tp * tn - fp * fn) / np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
 
-        with open(path + f"/Result best {title}.txt", "a") as file:
+        with open(name_exp + f"/Result best {title}.txt", "a") as file:
             if train:
                 file.write("Result on train data\n")
             else:
@@ -91,19 +90,17 @@ def search_best_model(name_exp):
             file.write(f"ROC-AUC: {auc:.3f}\n")
             file.write(f"MCC: {mcc:.3f}\n\n")
 
-    list_name = ["DecisionTree", "RandomForest"]
+    list_name = ["DecisionTree", "RandomForest", "CatBoost"]
     mode = "Usually"
 
     for name in list_name:
         name_alg = name
 
-        def optuna_optimize(trial):
-            # Необходимо задать пространство для поиска параметров.
-            # Нужно изучить какие параметры можно и стоит до настроить
+        def optuna_optimize(trial):  # Необходимо задать пространство для поиска параметров.
             model = -1
             if name_alg == "DecisionTree":
                 model = DecisionTreeClassifier(
-                    max_depth=trial.suggest_int("max_depth", 5, 10, 1),
+                    max_depth=trial.suggest_int("max_depth", 5, 20, 1),
                     criterion=trial.suggest_categorical("criterion", ['gini', 'entropy', 'log_loss'])
                 )
             elif name_alg == "RandomForest":
@@ -124,11 +121,9 @@ def search_best_model(name_exp):
             score = 0
             if mode == "Usually":
                 model.fit(x_train, y_train)
-                # score = metrics.fbeta_score(y_test, model.predict(x_test), beta=2)
-                score = metrics.matthews_corrcoef(y_test, model.predict(x_test))
+                score = metrics.recall_score(y_test, model.predict(x_test))
             elif mode == "Cross val":
-                # нужно подумать над кросс-валидацией
-                score = cross_val_score(model, x_train, y_train, cv=3, scoring="f1").mean()
+                score = cross_val_score(model, x_train, y_train, cv=3, scoring="recall").mean()
             return score
 
         # создадим объект исследования
@@ -142,4 +137,5 @@ def search_best_model(name_exp):
         study_best_model(name_alg, params=study_model.best_params)
 
 
-search_best_model("4meters_1ring_4angle")
+if __name__ == "__main__":
+    search_best_model("4meters_1ring_4angle")

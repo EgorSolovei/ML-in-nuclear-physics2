@@ -111,7 +111,7 @@ def search_best_model(name_exp):
                 )
             elif name_alg == "CatBoost":
                 model = CatBoostClassifier(
-                    iterations=trial.suggest_int("iterations", 100, 1001, 10),
+                    iterations=trial.suggest_int("iterations", 100, 1000, 10),
                     max_depth=trial.suggest_int("max_depth", 2, 9, 1),
                     learning_rate=trial.suggest_float("learning_rate", 0.0001, 0.0101, 0.0005),
                     verbose=False

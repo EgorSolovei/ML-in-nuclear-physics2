@@ -195,7 +195,8 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
     def position_in_res_vec(df):
         res['class'] = df.class_param.values[0]
         for i in range(1, len(dist) + 1):  # len(dist) - количество пар датчиков
-            for j in range(1, pieces + 1):  # тут нужно смотреть на сколько секторов мы разбиваем.
+            num_of_sector = (len(all_r) - 1) * pieces  # количество секторов на датчике
+            for j in range(1, num_of_sector + 1):
                 # создадим условие для нахождения минимального времени пролёта
                 condition_plus = (df[f'sensor_{i}'] == 1) & (df[f'sector_{i}'] == j)
                 condition_minus = (df[f'sensor_{i}'] == -1) & (df[f'sector_{i}'] == j)

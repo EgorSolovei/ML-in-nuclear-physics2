@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 from processing_one_experiment import data_processing
-from building_models import search_best_model
+from grid_search_models import searchCV_model
 
 
 list_experiments = [
@@ -74,7 +74,7 @@ for params_experiment in list_experiments:
         if len(os.listdir(path_to + "/processed_data")) == 100:
             print(f"Все файлы эксперимента {experiment_name} обработаны.")
             join_processed_data()  # склеим все данные в один файл data.csv
-            search_best_model(name_exp=experiment_name)  # поиск лучших гиперпараметров для алгоритмов
+            searchCV_model(name_exp=experiment_name, size_data=10000)  # поиск лучших гиперпараметров для алгоритмов
         else:
             print(f"Данные эксперимента {experiment_name} обработаны НЕ до конца!!!")
     else:

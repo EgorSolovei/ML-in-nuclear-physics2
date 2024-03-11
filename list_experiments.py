@@ -7,27 +7,16 @@ from grid_search_models import searchCV_model
 
 
 list_experiments = [
-    {'name_exp': '4meters_8centerring_4angle',
-     'path_from': '/home/egor/ML-in-nuclear-physics2/csv_data',
-     'path_to': '/home/egor/ML-in-nuclear-physics2',
+    {'name_exp': '4meters_8ring_4angle_new_feature',
+     'path_from': '/home/egor/programming/python/ML-in-nuclear-physics2/row_data',
+     'path_to': '/home/egor/programming/python/ML-in-nuclear-physics2',
      'begin_number_file': 1,
      'end_number_file': 100,
-     'borders': {1: [0, 1], 0: [1, 16.4]},
+     'borders': {1: [0, 1], 0: [1, 17]},
      'sensor_dist': [4],
-     'subrings': [2.5, 3.5, 4.5, 6, 7.5, 9, 12, 18.5, 25],
+     'subrings': [2.5, 5.31, 8.12, 10.93, 13.74, 16.55, 19.36, 22.17, 24.98],
      'step_angle': np.pi / 2
-     },
-
-    {'name_exp': '4meters_4ring_8angle',
-     'path_from': '/home/egor/ML-in-nuclear-physics2/csv_data',
-     'path_to': '/home/egor/ML-in-nuclear-physics2',
-     'begin_number_file': 1,
-     'end_number_file': 100,
-     'borders': {1: [0, 1], 0: [1, 16.4]},
-     'sensor_dist': [4],
-     'subrings': [2.5, 5, 7.5, 10],
-     'step_angle': np.pi / 4
-     },
+     }
 ]
 
 
@@ -85,7 +74,7 @@ for params_experiment in list_experiments:
         if len(os.listdir(path_to + "/processed_data")) == 100:
             print(f"Все файлы эксперимента {experiment_name} обработаны.")
             join_processed_data()  # склеим все данные в один файл data.csv
-            searchCV_model(name_exp=experiment_name, size_data=10000)  # поиск лучших гиперпараметров для алгоритмов
+            # searchCV_model(name_exp=experiment_name, size_data=10000)  # поиск лучших гиперпараметров для алгоритмов
         else:
             print(f"Данные эксперимента {experiment_name} обработаны НЕ до конца!!!")
     else:

@@ -28,9 +28,9 @@ def data_processing(borders, subrings, sensor_dist, step_angle, path_from, path_
         lst_col = create_column_names(len(sensor_dist), sectors, (len(subrings) - 1))
         data_res = pd.DataFrame(columns=lst_col)  # результирующий DataFrame, который записывается в файл
 
-        # цикл создания файла (2000 строк)
-        for id in range(1, quan_event + 1):
-            vec, data = get_vector_feature(id, data, borders, subrings, sensor_dist, step_angle)
+        # создания файла 2000 событий\строк
+        for event_id in range(1, quan_event + 1):
+            vec, data = get_vector_feature(event_id, data, borders, subrings, sensor_dist, step_angle)
             data_res.loc[len(data_res.index)] = vec  # добавление вектора в конец
 
         print(f"Время обработки: {(time.time() - start_time):.02f} секунд")

@@ -1,8 +1,9 @@
 .gitignore
+.ipynb_checkpoints
 new_format_data.py
 
 .idea
-csv_data/
+row_data/
 __pycache__
 
-4meters_1ring_4angle
+4meters_8ring_4angle

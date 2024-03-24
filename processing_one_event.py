@@ -7,7 +7,7 @@ from create_name import create_column_names
 pd.options.mode.chained_assignment = None
 
 
-def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
+def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='one_time'):
     # Функция определения класса прицельного параметра
     def define_class_impact_param(impact_param):
         for i in range(len(borders)):
@@ -102,7 +102,6 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
     попадания, в случае, если частица не попала на датчик, то как и ожидалось, там 0
     """
 
-    # Здесь начинаются странности с данными. Ни одна частица не прилетает в кольцо
     for i in range(len(dist)):
         name_column = "number_of_ring_" + str(i)
         data_to_vec[name_column] = 0
@@ -144,7 +143,7 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
 
     for i in range(len(dist)):
         sensor = "sensor_" + str(i + 1)  # для какого сенсора проверяем условия
-        name_column = "sector_id" + str(i)  # str(i) - пара датчиков. Значения там - сектор прилёта
+        name_column = "sector_id" + str(i)  # str(i_id) - пара датчиков. Значения там - сектор прилёта
         data_to_vec[name_column] = 0
 
         sector_id = 1
@@ -164,15 +163,14 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
     # Алгоритм определения сектора по кольцу попадания и номеру части сектора.
     # Умножим на модуль сенсора - индикатор (возможные значения: -1, 0, 1) пролёта частицы через этот сенсор.
     for i in range(len(dist)):
-        data_to_vec[f"sector_{i + 1}"] = abs(data_to_vec[f"sensor_{i + 1}"]) * data_to_vec[
-            f"number_of_ring_{i}"] * pieces \
-                                         + data_to_vec[f"sector_id{i}"]
+        data_to_vec[f"sector_{i + 1}"] = (abs(data_to_vec[f"sensor_{i + 1}"]) *
+                                          data_to_vec[f"number_of_ring_{i}"] * pieces + data_to_vec[f"sector_id{i}"])
         data_to_vec.drop(columns=[f'number_of_ring_{i}', f'sector_id{i}'], inplace=True)
 
     # Определение времени пролёта частицы
     # -----------------------------------------------------------------
-    data_to_vec["velocity"] = data_to_vec.impulse_z / np.sqrt(
-        data_to_vec.mass ** 2 + data_to_vec.modul_sum_impulse ** 2)
+    data_to_vec["velocity"] = (data_to_vec.impulse_z /
+                               np.sqrt(data_to_vec.mass ** 2 + data_to_vec.modul_sum_impulse ** 2))
 
     """
     Нужно обрабатывать случаи, когда частица не прилетает на датчик
@@ -192,33 +190,44 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle):
     # Создание результирующего вектора
     # -----------------------------------------------------------------
     lst_col = create_column_names(pair_sensor=len(dist), pieces=pieces, quan_rings=(len(all_r) - 1))
-    res = pd.Series([0.0] * len(lst_col), index=lst_col)
+    if mode == "one_time":
+        res = pd.Series([0.0] * len(lst_col), index=lst_col)
+    elif mode == "all_time":
+        res = pd.Series([[0.0]] * len(lst_col), index=lst_col)
 
     # заполнение вектора res
     def position_in_res_vec(df):
         res['impact_prm'] = df.impact_prm.values[0]
         res['class'] = df.class_param.values[0]
-        for i in range(1, len(dist) + 1):  # len(dist) - количество пар датчиков
+        for i_id in range(1, len(dist) + 1):  # len(dist) - количество пар датчиков
             num_of_sector = (len(all_r) - 1) * pieces  # количество секторов на датчике
-            for j in range(1, num_of_sector + 1):
+            for j_id in range(1, num_of_sector + 1):
                 # создадим условие для нахождения минимального времени пролёта
-                condition_plus = (df[f'sensor_{i}'] == 1) & (df[f'sector_{i}'] == j)
-                condition_minus = (df[f'sensor_{i}'] == -1) & (df[f'sector_{i}'] == j)
+                condition_plus = (df[f'sensor_{i_id}'] == 1) & (df[f'sector_{i_id}'] == j_id)
+                condition_minus = (df[f'sensor_{i_id}'] == -1) & (df[f'sector_{i_id}'] == j_id)
 
                 # сортируем по времени и берём самое меньшее время
-                min_data_plus = df[condition_plus].sort_values(f'time_{i}')
-                min_data_minus = df[condition_minus].sort_values(f'time_{i}')
+                min_data_plus = df[condition_plus].sort_values(f'time_{i_id}')
+                min_data_minus = df[condition_minus].sort_values(f'time_{i_id}')
 
                 # возможны случаи, когда ни одна частица не пролетела через датчик
-                if min_data_plus.shape[0] != 0:
-                    res[f'sns_{i}_sct_{j}_plus'] = min_data_plus[f'time_{i}'].values[0]
-                if min_data_minus.shape[0] != 0:
-                    res[f'sns_{i}_sct_{j}_minus'] = min_data_minus[f'time_{i}'].values[0]
+                if mode == "one_time":
+                    if min_data_plus.shape[0] != 0:
+                        res[f'sns_{i_id}_sct_{j_id}_plus'] = min_data_plus[f'time_{i_id}'].values[0]
+                    if min_data_minus.shape[0] != 0:
+                        res[f'sns_{i_id}_sct_{j_id}_minus'] = min_data_minus[f'time_{i_id}'].values[0]
+                elif mode == "all_time":
+                    if min_data_plus.shape[0] != 0:
+                        tmp_plus = list(min_data_plus[f'time_{i_id}'])
+                        res[f'sns_{i_id}_sct_{j_id}_plus'] = tmp_plus
+                    if min_data_minus.shape[0] != 0:
+                        tmp_minus = list(min_data_minus[f'time_{i_id}'])
+                        res[f'sns_{i_id}_sct_{j_id}_minus'] = tmp_minus
 
     # Обработка случая, когда после фильтрации не осталось никаких частиц попавших на датчик.
     # В этом случае вернём нулевой вектор
     if data_to_vec.shape[0] == 0:
-        return res.values, data
+        return res, data
     else:
         position_in_res_vec(data_to_vec)
-        return res.values, data
+        return res, data

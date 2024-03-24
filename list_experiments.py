@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 import os
 
-from processing_one_experiment import data_processing
+from processing_one_experiment import experiment_processing
 from grid_search_models import searchCV_model
 
 
 list_experiments = [
-    {'name_exp': '4meters_8ring_4angle_new_feature',
+    {'name_exp': '4meters_8ring_4angle_all_time',
      'path_from': '/home/egor/programming/python/ML-in-nuclear-physics2/row_data',
      'path_to': '/home/egor/programming/python/ML-in-nuclear-physics2',
      'begin_number_file': 1,
@@ -15,7 +15,8 @@ list_experiments = [
      'borders': {1: [0, 1], 0: [1, 17]},
      'sensor_dist': [4],
      'subrings': [2.5, 5.31, 8.12, 10.93, 13.74, 16.55, 19.36, 22.17, 24.98],
-     'step_angle': np.pi / 2
+     'step_angle': np.pi / 2,
+     'data_mode': 'all_time'
      }
 ]
 
@@ -50,6 +51,7 @@ for params_experiment in list_experiments:
     sensor_dist = params_experiment['sensor_dist']
     subrings = params_experiment['subrings']
     step_angle = params_experiment['step_angle']
+    data_mode = params_experiment['data_mode']
 
     # Путь получения и сохранения данных
     path_from = params_experiment['path_from']
@@ -64,13 +66,14 @@ for params_experiment in list_experiments:
     # запишем в файл параметры эксперимента
     with open(path_to + '/experiment_param.txt', 'w') as f:
         f.write(f"Название эксперимента: {experiment_name}.\nГраницы классов: {class_borders}."
-                f"\nРасстояние до датчиков: {sensor_dist}.\nПодкольца разбиения: {subrings}.\nШаг угла: {step_angle}")
+                f"\nРасстояние до датчиков: {sensor_dist}.\nПодкольца разбиения: {subrings}."
+                f"\nШаг угла: {step_angle}.\nКонфигурация данных: {data_mode}")
 
     # проверим корректность параметров
     if correct_params(begin_number_file, end_number_file, sensor_dist, subrings, step_angle):
         print(f"Параметры эксперимента {experiment_name} корректны. Началась обработка данных")
-        data_processing(class_borders, subrings, sensor_dist, step_angle,
-                        path_from, path_to, begin_number_file, end_number_file)
+        experiment_processing(class_borders, subrings, sensor_dist, step_angle, path_from, path_to,
+                              begin_number_file, end_number_file, data_mode)
         if len(os.listdir(path_to + "/processed_data")) == 100:
             print(f"Все файлы эксперимента {experiment_name} обработаны.")
             join_processed_data()  # склеим все данные в один файл data.csv

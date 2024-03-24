@@ -6,7 +6,8 @@ from processing_one_event import get_vector_feature
 from create_name import create_column_names
 
 
-def data_processing(borders, subrings, sensor_dist, step_angle, path_from, path_to, start_file=1, end_file=100):
+def experiment_processing(borders, subrings, sensor_dist, step_angle, path_from, path_to,
+                          start_file=1, end_file=100, mode_data="one_time"):
     # на каждой итерации обрабатывается 1 файл и создаётся 1 файл готовых данных
     for file_i in range(start_file, end_file + 1):
         print(f"Начата обработка файла №{file_i}")
@@ -30,7 +31,7 @@ def data_processing(borders, subrings, sensor_dist, step_angle, path_from, path_
 
         # создания файла 2000 событий\строк
         for event_id in range(1, quan_event + 1):
-            vec, data = get_vector_feature(event_id, data, borders, subrings, sensor_dist, step_angle)
+            vec, data = get_vector_feature(event_id, data, borders, subrings, sensor_dist, step_angle, mode_data)
             data_res.loc[len(data_res.index)] = vec  # добавление вектора в конец
 
         print(f"Время обработки: {(time.time() - start_time):.02f} секунд")

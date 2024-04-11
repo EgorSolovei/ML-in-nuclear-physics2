@@ -13,7 +13,7 @@ def experiment_processing(borders, subrings, sensor_dist, step_angle, path_from,
     sectors = int(2 * np.pi / step_angle)  # количество секторов на одном датчике
     lst_col = create_column_names(len(sensor_dist), sectors, (len(subrings) - 1))
 
-    for dist in sensor_dist: # создание файлов с углами
+    for dist in sensor_dist:  # создание файлов с углами
         theta = pd.Series([np.arctan(subring / dist) for subring in subrings])
         theta.to_csv(path_to + f"/theta_angle.csv", index=False)
         phi = pd.Series([i * step_angle for i in range(sectors)])

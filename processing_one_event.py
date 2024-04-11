@@ -169,6 +169,7 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
 
     # Определение времени пролёта частицы
     # -----------------------------------------------------------------
+    # время пролёта в доли от скорости света, т.е 0,3 - 0,3 от скорости света
     data_to_vec["velocity"] = (data_to_vec.impulse_z /
                                np.sqrt(data_to_vec.mass ** 2 + data_to_vec.modul_sum_impulse ** 2))
 
@@ -178,9 +179,9 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
     в случае, если частица НЕ прилетела на датчик, то и время пролёта будет 0
     возьмём модуль, так как для времен не имеет значение, в каком направлении летит частица
     """
-    # цикл определения времени пролёта для каждой пары датчиков
+    # цикл определения времени пролёта для каждой пары датчиков. Введён нормировочный множитель
     for i in range(1, len(dist) + 1):
-        data_to_vec[f"time_{i}"] = abs((dist[i - 1] * data_to_vec[f"sensor_{i}"]) / data_to_vec.velocity)
+        data_to_vec[f"time_{i}"] = (10 / 3) * abs((dist[i - 1] * data_to_vec[f"sensor_{i}"]) / data_to_vec.velocity)
 
     # Уберём все вспомогательные колонки.
     data_to_vec.drop(columns=["velocity", "impulse_x", "impulse_y",

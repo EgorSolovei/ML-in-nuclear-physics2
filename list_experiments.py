@@ -7,7 +7,7 @@ from grid_search_models import searchCV_model
 
 
 list_experiments = [
-    {'name_exp': '4meters_8ring_4angle_all_time',
+    {'name_exp': '4meters_8ring_4angle_with_light',
      'path_from': '/home/egor/programming/python/ML-in-nuclear-physics2/row_data',
      'path_to': '/home/egor/programming/python/ML-in-nuclear-physics2',
      'begin_number_file': 1,
@@ -16,7 +16,7 @@ list_experiments = [
      'sensor_dist': [4],
      'subrings': [2.5, 5.31, 8.12, 10.93, 13.74, 16.55, 19.36, 22.17, 24.98],
      'step_angle': np.pi / 2,
-     'data_mode': 'all_time'
+     'data_mode': 'one_time'
      }
 ]
 

@@ -1,22 +1,20 @@
-import pickle
-import pandas as pd
-import numpy as np
 import os
+import pickle
+import numpy as np
+import pandas as pd
 
-from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
+from catboost import CatBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from catboost import CatBoostClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
 
 
-# Функция уменьшения входящего DataFrame до размера size. Отбрасываются события 0 класса
 def decrease_data(df, size):
     data_class1 = df[df["class"] == 1]
     data_class0 = df[df["class"] == 0][:(size - data_class1.shape[0])]
     return pd.concat([data_class0, data_class1], ignore_index=True)
 
 
-# Задаём пространство для поиска параметров
 def define_params(name_alg):
     if name_alg == "DecisionTree":
         model = DecisionTreeClassifier()
@@ -36,28 +34,19 @@ def define_params(name_alg):
 
 
 def write_metrics(y_true, y_score, path, title, train):
-    # True positive
     tp = np.sum(y_true * y_score)
-    # False positive
     fp = np.sum((y_true == 0) * y_score)
-    # True negative
     tn = np.sum((y_true == 0) * (y_score == 0))
-    # False negative
     fn = np.sum(y_true * (y_score == 0))
 
-    # True positive rate (sensitivity or recall)
-    tpr = tp / (tp + fn)
-    # False positive rate (fall-out)
-    fpr = fp / (fp + tn)
-    # Precision
+    recall = tp / (tp + fn)
     precision = tp / (tp + fp)
-    # True negatvie tate (specificity)
-    tnr = 1 - fpr
-    # F1 score
     f1 = 2 * tp / (2 * tp + fp + fn)
-    # ROC-AUC for binary classification
-    auc = (tpr + tnr) / 2
-    # MCC. Коэффициент корреляции Мэтьюса. [-1, 1]
+    
+    fpr = fp / (fp + tn)
+    tnr = 1 - fpr
+    
+    auc = (recall + tnr) / 2  
     mcc = (tp * tn - fp * fn) / np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
 
     with open(path + f"/Result {title}.txt", "a") as file:
@@ -71,7 +60,7 @@ def write_metrics(y_true, y_score, path, title, train):
         file.write(f"True negative: {tn}\n")
         file.write(f"False negative: {fn}\n\n")
 
-        file.write(f"True positive rate (recall): {tpr:.3f}\n")
+        file.write(f"True positive rate (recall): {recall:.3f}\n")
         file.write(f"False positive rate: {fpr:.3f}\n")
         file.write(f"Precision: {precision:.3f}\n")
         file.write(f"True negative rate: {tnr:.3f}\n")
@@ -89,7 +78,7 @@ def gridCV(x_train, y_train, model, params, cv=5):
     return history, best_model
 
 
-def randomCV(x_train, y_train, model, params, cv=5):  # пока не используется
+def randomCV(x_train, y_train, model, params, cv=5):
     modelCV = RandomizedSearchCV(model, params, scoring="f1", cv=cv)
     modelCV.fit(x_train, y_train)
 
@@ -102,7 +91,7 @@ def searchCV_model(name_exp, size_data):
     data = pd.read_csv(name_exp + "/data.csv")
     data["class"] = data["class"].astype(int)
 
-    new_data = decrease_data(data, size_data).sample(frac=1)  # перемешивает полученный DataFrame
+    new_data = decrease_data(data, size_data).sample(frac=1)
     X = new_data.drop(["class"], axis=1)
     y = new_data["class"]
 
@@ -114,8 +103,8 @@ def searchCV_model(name_exp, size_data):
         model_hist, best_estimator = gridCV(x_train, y_train, estimator, model_params)
 
         path = name_exp + f"/{name}"
-        os.mkdir(path)  # отдельная папка для каждой модели
-        model_hist.to_csv(path + f"/history_{name}.csv", index=False)  # сохраним историю обучения модели
+        os.mkdir(path)
+        model_hist.to_csv(path + f"/history_{name}.csv", index=False)
 
         best_estimator.fit(x_train, y_train)
         write_metrics(y_train, best_estimator.predict(x_train), path, f"{name}", True)

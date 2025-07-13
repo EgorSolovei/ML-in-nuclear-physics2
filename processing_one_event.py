@@ -8,7 +8,7 @@ pd.options.mode.chained_assignment = None
 
 
 def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='one_time'):
-    # Функция определения класса прицельного параметра
+    
     def define_class_impact_param(impact_param):
         for i in range(len(borders)):
             if borders[i][0] <= impact_param < borders[i][1]:
@@ -21,13 +21,13 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
                 cnt_particle = df.lepton_number[i]  # количество частиц в столкновении
                 data_temp = df[i + 1: i + 1 + cnt_particle]  # вырезаем нужную часть
 
-                class_param = define_class_impact_param(df.strangeness[i])  # класс прицельного параметра
+                class_param = define_class_impact_param(df.strangeness[i])
                 data_temp.insert(0, "impact_prm", df.strangeness[i])
                 data_temp.insert(1, "class_param", class_param)
 
                 # обрежем события, которые уже обработаны, чтобы не перебирать все строки с начала
                 # хотя возможно и такое копирование будет делаться даже дольше и съедать память
-                df = df[i + 1 + cnt_particle::].reset_index(drop=True)  # сбросили индексы
+                df = df[i + 1 + cnt_particle::].reset_index(drop=True)
                 return df, data_temp
 
     # data_to_vec нужно преобразовать в вектор признаков. data - обрезанные входные данные
@@ -35,9 +35,10 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
 
     # Фильтруем данные
     # -----------------------------------------------------------------
-
-    # больше нам эти колонки не нужны, так как мы уже получили прицельный параметр
-    data_to_vec.drop(columns=['lepton_number', 'strangeness', 'type_of_particles'], inplace=True)
+    if mode == "type":
+        data_to_vec.drop(columns=['lepton_number', 'strangeness'], inplace=True)
+    else:
+        data_to_vec.drop(columns=['lepton_number', 'strangeness', "type_of_particles"], inplace=True)
     data_to_vec.query("particle_charge != 0", inplace=True)
 
     # Импульс
@@ -56,17 +57,12 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
 
     def to_sensor(temp_data):
         arccos = np.arccos(temp_data.impulse_z / temp_data.modul_sum_impulse)
-        # положительное положение датчиков
         result_plus = arccos.between(alpha_0, beta_0, inclusive="neither")
-        # отрицательное положение датчиков
         result_minus = arccos.between(np.pi - beta_0, np.pi - alpha_0, inclusive="neither")
         return result_plus | result_minus
 
-    data_to_vec['to_any_sensor'] = to_sensor(data_to_vec)  # тут pandas ругается на что-то
-    # оставляем те частицы, которые долетаю хотя бы до одного датчика
+    data_to_vec['to_any_sensor'] = to_sensor(data_to_vec)
     data_to_vec.query("to_any_sensor == True", inplace=True)
-
-    # Здесь каждая частица долетит до какого-нибудь датчика. Поэтому to_any_sensor уже не нужна
     data_to_vec.drop(columns=["particle_charge", "to_any_sensor"], inplace=True)
 
     # На какой датчик прилетела частица
@@ -74,7 +70,6 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
     alpha_i = [np.arctan(all_r[0] / dist_i) for dist_i in dist]  # минимальные углы для i датчика
     beta_i = [np.arctan(all_r[-1] / dist_i) for dist_i in dist]  # максимальные углы для i датчика
 
-    # создадим колонку с арккосинусом угла тета
     data_to_vec["arccos_theta"] = np.arccos(data_to_vec.impulse_z / data_to_vec.modul_sum_impulse)
 
     # создаём колонку для каждого датчика и делаем проверку прилетит ли частица через этот датчик.
@@ -149,8 +144,8 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
         sector_id = 1
         start_ang = -np.pi / 2  # т.к область значений арктангенса [-pi/2, pi/2]
         for k in range(int(pieces / 2)):  # цикл для impulse_x > 0
-            left_border_angle = start_ang + k * step_angle  # левая граница, угла сектора
-            right_border_angle = start_ang + (k + 1) * step_angle  # правая граница, угла сектора
+            left_border_angle = start_ang + k * step_angle
+            right_border_angle = start_ang + (k + 1) * step_angle
             data_to_vec.loc[condition(sensor, 1, left_border_angle, right_border_angle), name_column] = sector_id
             sector_id += 1
 
@@ -180,10 +175,10 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
     возьмём модуль, так как для времен не имеет значение, в каком направлении летит частица
     """
     # цикл определения времени пролёта для каждой пары датчиков. Введён нормировочный множитель
+    c = 2.99792458  # 10**8 м/с
     for i in range(1, len(dist) + 1):
-        data_to_vec[f"time_{i}"] = (10 / 3) * abs((dist[i - 1] * data_to_vec[f"sensor_{i}"]) / data_to_vec.velocity)
+        data_to_vec[f"time_{i}"] = (10 / c) * abs((dist[i - 1] * data_to_vec[f"sensor_{i}"]) / data_to_vec.velocity)
 
-    # Уберём все вспомогательные колонки.
     data_to_vec.drop(columns=["velocity", "impulse_x", "impulse_y",
                               "impulse_z", "modul_sum_impulse", "mass",
                               "arctg_phi", "arccos_theta"], inplace=True)
@@ -191,16 +186,16 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
     # Создание результирующего вектора
     # -----------------------------------------------------------------
     lst_col = create_column_names(pair_sensor=len(dist), pieces=pieces, quan_rings=(len(all_r) - 1))
-    if mode == "one_time":
+    if mode == "type":
+        res = pd.Series([(0, 0.0)] * len(lst_col), index=lst_col)
+    else:
         res = pd.Series([0.0] * len(lst_col), index=lst_col)
-    elif mode == "all_time":
-        res = pd.Series([[0.0]] * len(lst_col), index=lst_col)
 
     # заполнение вектора res
     def position_in_res_vec(df):
         res['impact_prm'] = df.impact_prm.values[0]
         res['class'] = df.class_param.values[0]
-        for i_id in range(1, len(dist) + 1):  # len(dist) - количество пар датчиков
+        for i_id in range(1, len(dist) + 1):
             num_of_sector = (len(all_r) - 1) * pieces  # количество секторов на датчике
             for j_id in range(1, num_of_sector + 1):
                 # создадим условие для нахождения минимального времени пролёта
@@ -212,21 +207,20 @@ def get_vector_feature(idx_event, data, borders, all_r, dist, step_angle, mode='
                 min_data_minus = df[condition_minus].sort_values(f'time_{i_id}')
 
                 # возможны случаи, когда ни одна частица не пролетела через датчик
-                if mode == "one_time":
+                if mode == "type":
+                    if min_data_plus.shape[0] != 0:
+                        res[f'sns_{i_id}_sct_{j_id}_plus'] = (min_data_plus["type_of_particles"].values[0],
+                                                              min_data_plus[f'time_{i_id}'].values[0])
+                    if min_data_minus.shape[0] != 0:
+                        res[f'sns_{i_id}_sct_{j_id}_minus'] = (min_data_minus["type_of_particles"].values[0],
+                                                               min_data_minus[f'time_{i_id}'].values[0])
+                elif mode == "one_time":
                     if min_data_plus.shape[0] != 0:
                         res[f'sns_{i_id}_sct_{j_id}_plus'] = min_data_plus[f'time_{i_id}'].values[0]
                     if min_data_minus.shape[0] != 0:
                         res[f'sns_{i_id}_sct_{j_id}_minus'] = min_data_minus[f'time_{i_id}'].values[0]
-                elif mode == "all_time":
-                    if min_data_plus.shape[0] != 0:
-                        tmp_plus = list(min_data_plus[f'time_{i_id}'])
-                        res[f'sns_{i_id}_sct_{j_id}_plus'] = tmp_plus
-                    if min_data_minus.shape[0] != 0:
-                        tmp_minus = list(min_data_minus[f'time_{i_id}'])
-                        res[f'sns_{i_id}_sct_{j_id}_minus'] = tmp_minus
 
     # Обработка случая, когда после фильтрации не осталось никаких частиц попавших на датчик.
-    # В этом случае вернём нулевой вектор
     if data_to_vec.shape[0] == 0:
         return res, data
     else:

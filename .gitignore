@@ -6,7 +6,6 @@ new_format_data.py
 row_data/
 __pycache__
 
-4meters_8ring_4angle
-4meters_8ring_4angle_new_feature
-4meters_8ring_4angle_all_time
-4meters_8ring_4angle_with_light
+4meters_8ring_4angle_type
+classic
+4classes

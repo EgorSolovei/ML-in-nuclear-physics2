@@ -1,8 +1,8 @@
 [
   {
   'name_exp': '4classes',
-  'path_from': '/home/egor/programming/python/ML-in-nuclear-physics2/row_data',
-  'path_to': '/home/egor/programming/python/ML-in-nuclear-physics2',
+  'path_from': 'path_to_row_data',
+  'path_to': 'path_to_dir',
   'begin_number_file': 1,
   'end_number_file': 100,
   'borders': {0: [0, 7], 1: [7, 9.8], 2: [9.8, 12], 3: [12, 17]},
